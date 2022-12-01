@@ -156,6 +156,7 @@ df_2022 = pd.read_csv('data_2022.csv')
 Dataset_22 = create_dataset(window_size, df_2022)   # creating dataset for 2022
 
 # plotting demand, random forest prediction and MLP prediction, using the other prediction function this time
+# it is important to use the same random forest and MLP ensemble as for the training data
 plt.plot(df_2022.Demand, label='original')
 plt.plot(make_prediction_unknown_data(RandomForest, Dataset_22, 365), label='random forest prediction', color='green')
 plt.plot(make_prediction_unknown_data(MLP_models, Dataset_22, 365), label='MLP prediction', color='red')
