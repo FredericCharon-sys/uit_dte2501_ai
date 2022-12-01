@@ -23,8 +23,9 @@ def create_dataset(w_size, dataframe):
 
 def make_prediction(model_list, dataset):
     """
-    gets an amount of models (e.g. trees) and a dataset and calculates the average prediction for each output
-       based on the last n (= window size) inputs
+    gets a list of models (e.g. trees) and a dataset and returns the models predicted outputs in a list. This function
+        also contains the aggregation (part of bagging) so when more than one model are used it returns the averages
+        prediction of all the models.
     """
     predictions = [None for _ in range(window_size)]  # there are no predictions for the first n (= window size) outputs
     for i in range(len(dataset[0])):    # iterating through each element of the dataset
@@ -91,9 +92,9 @@ def create_mlp(dataset):
 
 def make_prediction_unknown_data(model_list, dataset, n_days):
     """
-    a variation of the prediction function, used to predict data for a longer time than we have inputs for.
-    Getting a list of models, a dataset and an amount of days as input, the amount of days determines after how many
-        outputs the prediction stops
+    a variation of the make_prediction function, used to predict data for a longer timespan than we have inputs for.
+    Getting a list of models, a dataset and an amount of days as input, the amount of days determines for how many days
+        we want to predict the data
     """
     pred_dataset = dataset
     predictions = make_prediction(model_list, dataset)  # first we predict the outputs like before for the given inputs
@@ -113,44 +114,56 @@ def make_prediction_unknown_data(model_list, dataset, n_days):
     return predictions
 
 
+print("\n--- Welcome to AFC! ---"
+      "\nExperience our AI in action to see different prediction models for the demand of our shower curtain rings."
+      "\n\nLoading predictions for 2021, please wait ...")
+
+
 # --- Task 2 ---
-df_2021 = pd.read_csv('data_2021.csv')
+df_2021 = pd.read_csv('data_2021.csv')      # reading the csv file
 window_size = 40
-Dataset = create_dataset(window_size, df_2021)
-SingleTree = create_random_tree(Dataset)
+Dataset = create_dataset(window_size, df_2021)      # creating the dataset
+SingleTree = create_random_tree(Dataset)    # creating a single random tree
+
+# plotting single tree and original demand
 plt.plot(df_2021.Demand, label='original')
 plt.plot(make_prediction([SingleTree], Dataset), label='single tree prediction')
 
+
 # --- Task 3 ---
-RandomForest = create_and_train('tree', 207, Dataset)
+RandomForest = create_and_train('tree', 207, Dataset)   # creating 207 random trees and combining them to a random forest
+# plotting the random forest prediction, within prediction bagging is used
 plt.plot(make_prediction(RandomForest, Dataset), label='random forest prediction', color='green')
 
+
 # --- Task 4 ---
-MLP_models = create_and_train('MLP', 207, Dataset)
-plt.plot(make_prediction(MLP_models, Dataset), label='MLP prediction', color='red')
+MLP_models = create_and_train('MLP', 207, Dataset)      # creating 207 MLPs
+plt.plot(make_prediction(MLP_models, Dataset), label='MLP prediction', color='red') # plotting MLP prediction
 
-
+# showing plot
 plt.legend()
 plt.xlabel('days')
 plt.ylabel('demand')
 plt.title('Year 2021 - demand and predictions')
+print("- done! -")
 plt.show()
 
 
 # --- Task 5 ---
-df_2022 = pd.read_csv('data_2022.csv')
-Dataset_22 = create_dataset(window_size, df_2022)
+print("\nLoading predictions for 2022, please wait ...")
 
-plt.plot(df_2022.Demand)
+df_2022 = pd.read_csv('data_2022.csv')
+Dataset_22 = create_dataset(window_size, df_2022)   # creating dataset for 2022
+
+# plotting demand, random forest prediction and MLP prediction, using the other prediction function this time
+plt.plot(df_2022.Demand, label='original')
 plt.plot(make_prediction_unknown_data(RandomForest, Dataset_22, 365), label='random forest prediction', color='green')
 plt.plot(make_prediction_unknown_data(MLP_models, Dataset_22, 365), label='MLP prediction', color='red')
 
-
+# showing plot
 plt.legend()
 plt.xlabel('days')
 plt.ylabel('demand')
 plt.title('Year 2022 - demand and predictions')
+print("- done! -")
 plt.show()
-
-
-# asking Adreas: Test und Training for bootstrapping? task 5 behaviour as expected? How many classifiers for bagging?
